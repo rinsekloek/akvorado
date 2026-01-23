@@ -648,6 +648,64 @@ $ curl -s http://127.0.0.1:8080/api/v0/console/widget/flow-last | jq .
 [expr]: https://expr-lang.org/docs/language-definition
 [from Go]: https://github.com/google/re2/wiki/Syntax
 
+#### Anonymization
+
+The core component supports anonymizing IP addresses in flows before storing them
+in ClickHouse. This can help with privacy compliance and data protection requirements.
+The anonymization feature supports two modes of operation and multiple scoping options.
+
+The following configuration keys are available under `anonymize`:
+
+- `enabled` enables or disables IP address anonymization (default: `false`)
+- `mode` selects the anonymization algorithm:
+  - `cryptopan` uses the CryptoPAN algorithm for prefix-preserving anonymization (default)
+  - `aggregate` aggregates IP addresses to a specified prefix length
+- `scope` determines which addresses should be anonymized (default: `always`):
+  - `always` anonymizes all addresses (default behavior)
+  - `external` anonymizes only addresses on interfaces classified as external
+  - `internal` anonymizes only addresses on interfaces classified as internal
+  - `public-as` anonymizes only addresses with public AS numbers (non-private)
+  - `private-as` anonymizes only addresses with private AS numbers
+- `cryptopan` configures CryptoPAN-specific settings:
+  - `key` is the encryption key (base64-encoded or raw string). Can also be set via `CRYPTOPAN_KEY` environment variable
+  - `cache` is the LRU cache size for anonymized IPs (default: `10000`)
+- `aggregate` configures aggregation-specific settings:
+  - `v4prefix` is the prefix length for IPv4 aggregation (default: `24`)
+  - `v6prefix` is the prefix length for IPv6 aggregation (default: `64`)
+
+Example configuration using CryptoPAN to anonymize only external addresses:
+
+```yaml
+outlet:
+  core:
+    anonymize:
+      enabled: true
+      mode: cryptopan
+      scope: external
+      cryptopan:
+        key: "your-base64-encoded-key-here"
+        cache: 10000
+```
+
+Example configuration using aggregation to anonymize private AS addresses:
+
+```yaml
+outlet:
+  core:
+    anonymize:
+      enabled: true
+      mode: aggregate
+      scope: private-as
+      aggregate:
+        v4prefix: 24
+        v6prefix: 64
+```
+
+The scope options work as follows:
+- `external` and `internal` scopes use interface boundary classification. You must configure interface classifiers with `ClassifyExternal()` or `ClassifyInternal()` for these scopes to work correctly.
+- `public-as` and `private-as` scopes use AS number classification based on IANA private AS ranges (64496-65551 and 4,200,000,000+).
+- If a flow has both input and output interfaces, the address will be anonymized if either interface matches the boundary condition.
+
 ### ClickHouse
 
 The ClickHouse component pushes data to ClickHouse. There are three settings that

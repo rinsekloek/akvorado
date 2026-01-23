@@ -12,14 +12,14 @@ import (
 
 func TestAnonymizationScope(t *testing.T) {
 	tests := []struct {
-		name          string
-		scope         AnonymizeScope
-		inBoundary    schema.InterfaceBoundary
-		outBoundary   schema.InterfaceBoundary
-		srcAS         uint32
-		dstAS         uint32
-		isSrc         bool
-		shouldAnon    bool
+		name        string
+		scope       AnonymizeScope
+		inBoundary  schema.InterfaceBoundary
+		outBoundary schema.InterfaceBoundary
+		srcAS       uint32
+		dstAS       uint32
+		isSrc       bool
+		shouldAnon  bool
 	}{
 		{
 			name:       "always scope - should anonymize",

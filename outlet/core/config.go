@@ -78,7 +78,7 @@ type Configuration struct {
 	// NetProviders defines the source used to get Prefix/Network Information
 	NetProviders []NetProvider `validate:"dive"`
 	// Anonymize holds anonymization settings (new nested model)
-	Anonymize AnonymizeConfig 
+	Anonymize AnonymizeConfig
 	// Note: cryptopan-key and cryptopan-cache (old flat keys) are migrated in the unmarshaller hook.
 }
 
