@@ -23,6 +23,23 @@ const (
 	AnonymizeModeAggregate AnonymizeMode = "aggregate"
 )
 
+// AnonymizeScope defines when to anonymize addresses based on interface boundary or AS.
+type AnonymizeScope string
+
+// constants of AnonymizeScope
+const (
+	// AnonymizeScopeAlways anonymizes all addresses (default behavior)
+	AnonymizeScopeAlways AnonymizeScope = "always"
+	// AnonymizeScopeExternal anonymizes addresses on external interfaces
+	AnonymizeScopeExternal AnonymizeScope = "external"
+	// AnonymizeScopeInternal anonymizes addresses on internal interfaces
+	AnonymizeScopeInternal AnonymizeScope = "internal"
+	// AnonymizeScopePublicAS anonymizes addresses with public AS numbers (non-private)
+	AnonymizeScopePublicAS AnonymizeScope = "public-as"
+	// AnonymizeScopePrivateAS anonymizes addresses with private AS numbers
+	AnonymizeScopePrivateAS AnonymizeScope = "private-as"
+)
+
 // AnonymizeCryptoPanConfig holds cryptopan-specific settings.
 type AnonymizeCryptoPanConfig struct {
 	Key   string `mapstructure:"key"`
@@ -37,8 +54,9 @@ type AnonymizeAggregateConfig struct {
 
 // AnonymizeConfig is the new nested configuration for anonymization.
 type AnonymizeConfig struct {
-	Enabled   bool                    `mapstructure:"enabled"`
-	Mode      AnonymizeMode           `mapstructure:"mode"`
+	Enabled   bool                     `mapstructure:"enabled"`
+	Mode      AnonymizeMode            `mapstructure:"mode"`
+	Scope     AnonymizeScope           `mapstructure:"scope"`
 	CryptoPan AnonymizeCryptoPanConfig `mapstructure:"cryptopan"`
 	Aggregate AnonymizeAggregateConfig `mapstructure:"aggregate"`
 }
@@ -75,6 +93,7 @@ func DefaultConfiguration() Configuration {
 		Anonymize: AnonymizeConfig{
 			Enabled: false,
 			Mode:    AnonymizeModeCryptoPan,
+			Scope:   AnonymizeScopeAlways,
 			CryptoPan: AnonymizeCryptoPanConfig{
 				Key:   "",
 				Cache: 10000,

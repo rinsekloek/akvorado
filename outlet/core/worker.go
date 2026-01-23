@@ -28,6 +28,10 @@ type worker struct {
 	rawFlow pb.RawFlow
 
 	scaleRequestChan chan<- kafka.ScaleRequest
+
+	// Boundary tracking for anonymization scope
+	inIfBoundary  schema.InterfaceBoundary
+	outIfBoundary schema.InterfaceBoundary
 }
 
 // newWorker instantiates a new worker and returns a callback function to
@@ -77,10 +81,13 @@ func (w *worker) processIncomingFlow(ctx context.Context, data []byte) error {
 		}
 
 		// anonymize IPs stored in the flow message before ClickHouse insert
-		// TODO make option to specify scope (Boundary/AS/?) of SrcAddr/DstAddr to be anonymized 
 		if w.c.anonymizer != nil && w.c.anonymizer.enabled {
-			w.bf.SrcAddr = w.anonymizeAddr(w.bf.SrcAddr)
-			w.bf.DstAddr = w.anonymizeAddr(w.bf.DstAddr)
+			if w.shouldAnonymize(w.bf.SrcAddr, true) {
+				w.bf.SrcAddr = w.anonymizeAddr(w.bf.SrcAddr)
+			}
+			if w.shouldAnonymize(w.bf.DstAddr, false) {
+				w.bf.DstAddr = w.anonymizeAddr(w.bf.DstAddr)
+			}
 		}
 
 		// If we have HTTP clients, send to them too
@@ -142,4 +149,49 @@ func (w *worker) anonymizeAddr(a netip.Addr) netip.Addr {
 		return na
 	}
 	return a
+}
+
+// shouldAnonymize determines whether an address should be anonymized based on the
+// configured scope. isSrc indicates if this is a source address (true) or destination (false).
+func (w *worker) shouldAnonymize(addr netip.Addr, isSrc bool) bool {
+	if !addr.IsValid() {
+		return false
+	}
+
+	scope := w.c.config.Anonymize.Scope
+	switch scope {
+	case AnonymizeScopeAlways:
+		// Always anonymize
+		return true
+
+	case AnonymizeScopeExternal:
+		// Anonymize if either interface is external
+		return w.inIfBoundary == schema.InterfaceBoundaryExternal ||
+			w.outIfBoundary == schema.InterfaceBoundaryExternal
+
+	case AnonymizeScopeInternal:
+		// Anonymize if either interface is internal
+		return w.inIfBoundary == schema.InterfaceBoundaryInternal ||
+			w.outIfBoundary == schema.InterfaceBoundaryInternal
+
+	case AnonymizeScopePublicAS:
+		// Anonymize if the corresponding AS is public (not private)
+		as := w.bf.SrcAS
+		if !isSrc {
+			as = w.bf.DstAS
+		}
+		return !isPrivateAS(as)
+
+	case AnonymizeScopePrivateAS:
+		// Anonymize if the corresponding AS is private
+		as := w.bf.SrcAS
+		if !isSrc {
+			as = w.bf.DstAS
+		}
+		return isPrivateAS(as)
+
+	default:
+		// Unknown scope, default to always anonymize
+		return true
+	}
 }

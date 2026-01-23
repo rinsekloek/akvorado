@@ -158,6 +158,10 @@ func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) bool {
 	flow.AppendUint(schema.ColumnInIfSpeed, uint64(flowInIfSpeed))
 	flow.AppendUint(schema.ColumnOutIfSpeed, uint64(flowOutIfSpeed))
 
+	// Store boundaries for later use in anonymization
+	w.inIfBoundary = inIfClassification.Boundary
+	w.outIfBoundary = outIfClassification.Boundary
+
 	return skip
 }
 
