@@ -144,10 +144,15 @@ func (w *worker) shouldAnonymize(addr netip.Addr, asn uint32, boundary schema.In
 			// If no ASNs configured, don't anonymize anything
 			return false
 		}
+		// ASN 0 indicates unknown/unassigned AS, don't anonymize
+		if asn == 0 {
+			return false
+		}
 		return w.c.anonymizer.scopeASNs[asn]
 
 	default:
 		// Unknown scope, default to anonymizing everything for safety
+		w.l.Warn().Str("scope", string(w.c.anonymizer.scope)).Msg("unknown anonymization scope, defaulting to anonymize all")
 		return true
 	}
 }
