@@ -14,18 +14,18 @@ import (
 
 // Anonymizer wraps CryptoPAN and an LRU cache.
 type Anonymizer struct {
-	cp             *CryptoPAN
-	cache          *lru.Cache
-	mu             sync.RWMutex
+	cp    *CryptoPAN
+	cache *lru.Cache
+	mu    sync.RWMutex
 
-	enabled        bool
-	aggregate      bool
+	enabled   bool
+	aggregate bool
 
 	aggregateV4Len int
 	aggregateV6Len int
 
-	scope          AnonymizeScope
-	scopeASNs      map[uint32]bool
+	scope     AnonymizeScope
+	scopeASNs map[uint32]bool
 }
 
 // NewAnonymizer builds an Anonymizer from the new nested configuration.

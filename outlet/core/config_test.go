@@ -123,8 +123,8 @@ func TestConfigurationUnmarshallerHook(t *testing.T) {
 			},
 			Expected: Configuration{
 				Anonymize: AnonymizeConfig{
-					Enabled:   true,
-					Scope:     AnonymizeScopeAll,
+					Enabled: true,
+					Scope:   AnonymizeScopeAll,
 				},
 			},
 			SkipValidation: true,
@@ -141,8 +141,8 @@ func TestConfigurationUnmarshallerHook(t *testing.T) {
 			},
 			Expected: Configuration{
 				Anonymize: AnonymizeConfig{
-					Enabled:   true,
-					Scope:     AnonymizeScopeExternalBoundary,
+					Enabled: true,
+					Scope:   AnonymizeScopeExternalBoundary,
 				},
 			},
 			SkipValidation: true,
