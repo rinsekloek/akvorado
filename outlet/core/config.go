@@ -17,7 +17,7 @@ import (
 // AnonymizeMode selects how IP anonymization is performed.
 type AnonymizeMode string
 
-// contants of AnonymizeMode
+// constants of AnonymizeMode
 const (
 	AnonymizeModeCryptoPan AnonymizeMode = "cryptopan"
 	AnonymizeModeAggregate AnonymizeMode = "aggregate"

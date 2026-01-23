@@ -174,21 +174,18 @@ func (w *worker) shouldAnonymize(addr netip.Addr, isSrc bool) bool {
 		return w.inIfBoundary == schema.InterfaceBoundaryInternal ||
 			w.outIfBoundary == schema.InterfaceBoundaryInternal
 
-	case AnonymizeScopePublicAS:
-		// Anonymize if the corresponding AS is public (not private)
+	case AnonymizeScopePublicAS, AnonymizeScopePrivateAS:
+		// Get the AS number for this address
 		as := w.bf.SrcAS
 		if !isSrc {
 			as = w.bf.DstAS
 		}
-		return !isPrivateAS(as)
-
-	case AnonymizeScopePrivateAS:
-		// Anonymize if the corresponding AS is private
-		as := w.bf.SrcAS
-		if !isSrc {
-			as = w.bf.DstAS
+		// Check if it's private or public based on the scope
+		isPrivate := isPrivateAS(as)
+		if scope == AnonymizeScopePublicAS {
+			return !isPrivate
 		}
-		return isPrivateAS(as)
+		return isPrivate
 
 	default:
 		// Unknown scope, default to always anonymize
