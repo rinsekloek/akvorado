@@ -71,16 +71,20 @@ func (w *worker) processIncomingFlow(ctx context.Context, data []byte) error {
 
 		// Enrichment
 		ip := w.bf.ExporterAddress
-		if skip := w.enrichFlow(ip, exporter); skip {
+		skip, inIfBoundary, outIfBoundary := w.enrichFlow(ip, exporter)
+		if skip {
 			w.bf.Undo()
 			return
 		}
 
 		// anonymize IPs stored in the flow message before ClickHouse insert
-		// TODO make option to specify scope (Boundary/AS/?) of SrcAddr/DstAddr to be anonymized 
 		if w.c.anonymizer != nil && w.c.anonymizer.enabled {
-			w.bf.SrcAddr = w.anonymizeAddr(w.bf.SrcAddr)
-			w.bf.DstAddr = w.anonymizeAddr(w.bf.DstAddr)
+			if w.shouldAnonymize(w.bf.SrcAddr, w.bf.SrcAS, inIfBoundary, true) {
+				w.bf.SrcAddr = w.anonymizeAddr(w.bf.SrcAddr)
+			}
+			if w.shouldAnonymize(w.bf.DstAddr, w.bf.DstAS, outIfBoundary, false) {
+				w.bf.DstAddr = w.anonymizeAddr(w.bf.DstAddr)
+			}
 		}
 
 		// If we have HTTP clients, send to them too
@@ -115,6 +119,37 @@ func (w *worker) processIncomingFlow(ctx context.Context, data []byte) error {
 	}
 
 	return nil
+}
+
+// shouldAnonymize determines whether an IP address should be anonymized based on the configured scope.
+// It takes the AS number and interface boundary for the address being checked.
+// isSrc indicates whether this is a source address (true) or destination address (false).
+func (w *worker) shouldAnonymize(addr netip.Addr, asn uint32, boundary schema.InterfaceBoundary, isSrc bool) bool {
+	if !addr.IsValid() {
+		return false
+	}
+
+	switch w.c.anonymizer.scope {
+	case AnonymizeScopeAll:
+		// Anonymize everything (default behavior)
+		return true
+
+	case AnonymizeScopeExternalBoundary:
+		// Only anonymize if the interface boundary is external
+		return boundary == schema.InterfaceBoundaryExternal
+
+	case AnonymizeScopeASList:
+		// Only anonymize if the AS number is in the configured list
+		if len(w.c.anonymizer.scopeASNs) == 0 {
+			// If no ASNs configured, don't anonymize anything
+			return false
+		}
+		return w.c.anonymizer.scopeASNs[asn]
+
+	default:
+		// Unknown scope, default to anonymizing everything for safety
+		return true
+	}
 }
 
 // anonymizeAddr converts netip.Addr -> net.IP, applies either aggregation or cryptopan

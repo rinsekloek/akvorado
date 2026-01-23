@@ -23,6 +23,19 @@ const (
 	AnonymizeModeAggregate AnonymizeMode = "aggregate"
 )
 
+// AnonymizeScope selects which IP addresses should be anonymized based on flow properties.
+type AnonymizeScope string
+
+// constants of AnonymizeScope
+const (
+	// AnonymizeScopeAll anonymizes all IP addresses (default behavior)
+	AnonymizeScopeAll AnonymizeScope = "all"
+	// AnonymizeScopeExternalBoundary only anonymizes IPs on flows crossing external interface boundaries
+	AnonymizeScopeExternalBoundary AnonymizeScope = "external-boundary"
+	// AnonymizeScopeASList only anonymizes IPs belonging to specific AS numbers
+	AnonymizeScopeASList AnonymizeScope = "as-list"
+)
+
 // AnonymizeCryptoPanConfig holds cryptopan-specific settings.
 type AnonymizeCryptoPanConfig struct {
 	Key   string `mapstructure:"key"`
@@ -41,6 +54,8 @@ type AnonymizeConfig struct {
 	Mode      AnonymizeMode           `mapstructure:"mode"`
 	CryptoPan AnonymizeCryptoPanConfig `mapstructure:"cryptopan"`
 	Aggregate AnonymizeAggregateConfig `mapstructure:"aggregate"`
+	Scope     AnonymizeScope          `mapstructure:"scope"`
+	ScopeASNs []uint32                `mapstructure:"scope-asns"`
 }
 
 // Configuration describes the configuration for the core component.
@@ -83,6 +98,8 @@ func DefaultConfiguration() Configuration {
 				V4Prefix: 24,
 				V6Prefix: 64,
 			},
+			Scope:     AnonymizeScopeAll,
+			ScopeASNs: []uint32{},
 		},
 	}
 }

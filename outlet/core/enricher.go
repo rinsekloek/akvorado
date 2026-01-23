@@ -19,7 +19,8 @@ type exporterAndInterfaceInfo struct {
 }
 
 // enrichFlow adds more data to a flow.
-func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) bool {
+// Returns skip (true if flow should be skipped), inIfBoundary, outIfBoundary
+func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) (bool, schema.InterfaceBoundary, schema.InterfaceBoundary) {
 	var (
 		flowExporterName                                                       string
 		flowInIfName, flowInIfDescription, flowOutIfName, flowOutIfDescription string
@@ -98,7 +99,7 @@ func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) bool {
 	}
 
 	if skip {
-		return true
+		return true, schema.InterfaceBoundaryUndefined, schema.InterfaceBoundaryUndefined
 	}
 
 	// Classification
@@ -124,7 +125,7 @@ func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) bool {
 			}, inIfClassification,
 			true) {
 		// Flow is rejected
-		return true
+		return true, schema.InterfaceBoundaryUndefined, schema.InterfaceBoundaryUndefined
 	}
 
 	ctx := c.t.Context(context.Background())
@@ -158,7 +159,7 @@ func (w *worker) enrichFlow(exporterIP netip.Addr, exporterStr string) bool {
 	flow.AppendUint(schema.ColumnInIfSpeed, uint64(flowInIfSpeed))
 	flow.AppendUint(schema.ColumnOutIfSpeed, uint64(flowOutIfSpeed))
 
-	return skip
+	return skip, inIfClassification.Boundary, outIfClassification.Boundary
 }
 
 // getASNumber retrieves the AS number for a flow, depending on user preferences.

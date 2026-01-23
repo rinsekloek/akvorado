@@ -110,6 +110,62 @@ func TestConfigurationUnmarshallerHook(t *testing.T) {
 				NetProviders: []NetProvider{NetProviderFlow, NetProviderRouting},
 			},
 			SkipValidation: true,
+		}, {
+			Description: "anonymize scope all",
+			Initial:     func() any { return Configuration{} },
+			Configuration: func() any {
+				return helpers.M{
+					"anonymize": helpers.M{
+						"enabled": true,
+						"scope":   "all",
+					},
+				}
+			},
+			Expected: Configuration{
+				Anonymize: AnonymizeConfig{
+					Enabled:   true,
+					Scope:     AnonymizeScopeAll,
+				},
+			},
+			SkipValidation: true,
+		}, {
+			Description: "anonymize scope external-boundary",
+			Initial:     func() any { return Configuration{} },
+			Configuration: func() any {
+				return helpers.M{
+					"anonymize": helpers.M{
+						"enabled": true,
+						"scope":   "external-boundary",
+					},
+				}
+			},
+			Expected: Configuration{
+				Anonymize: AnonymizeConfig{
+					Enabled:   true,
+					Scope:     AnonymizeScopeExternalBoundary,
+				},
+			},
+			SkipValidation: true,
+		}, {
+			Description: "anonymize scope as-list",
+			Initial:     func() any { return Configuration{} },
+			Configuration: func() any {
+				return helpers.M{
+					"anonymize": helpers.M{
+						"enabled":    true,
+						"scope":      "as-list",
+						"scope-asns": []uint32{65001, 65002, 65003},
+					},
+				}
+			},
+			Expected: Configuration{
+				Anonymize: AnonymizeConfig{
+					Enabled:   true,
+					Scope:     AnonymizeScopeASList,
+					ScopeASNs: []uint32{65001, 65002, 65003},
+				},
+			},
+			SkipValidation: true,
 		},
 	})
 }

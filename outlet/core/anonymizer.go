@@ -23,6 +23,9 @@ type Anonymizer struct {
 
 	aggregateV4Len int
 	aggregateV6Len int
+
+	scope          AnonymizeScope
+	scopeASNs      map[uint32]bool
 }
 
 // NewAnonymizer builds an Anonymizer from the new nested configuration.
@@ -46,6 +49,13 @@ func NewAnonymizer(cfg AnonymizeConfig) (*Anonymizer, error) {
 		aggregate:      false,
 		aggregateV4Len: cfg.Aggregate.V4Prefix,
 		aggregateV6Len: cfg.Aggregate.V6Prefix,
+		scope:          cfg.Scope,
+		scopeASNs:      make(map[uint32]bool),
+	}
+
+	// Build ASN map for quick lookups
+	for _, asn := range cfg.ScopeASNs {
+		a.scopeASNs[asn] = true
 	}
 
 	// If not enabled, return quickly (cache allocated for safety)
