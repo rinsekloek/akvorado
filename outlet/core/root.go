@@ -15,6 +15,7 @@ import (
 	"akvorado/common/httpserver"
 	"akvorado/common/reporter"
 	"akvorado/common/schema"
+	"akvorado/outlet/cgnat"
 	"akvorado/outlet/clickhouse"
 	"akvorado/outlet/flow"
 	"akvorado/outlet/kafka"
@@ -40,7 +41,7 @@ type Component struct {
 	classifierErrLogger      reporter.Logger
 
 	// anonymizer used to anonymize SrcAddr/DstAddr before writing to ClickHouse
-	anonymizer *Anonymizer
+	anonymizer  *Anonymizer
 	rateLimiter rateLimiter
 }
 
@@ -50,6 +51,7 @@ type Dependencies struct {
 	Flow       *flow.Component
 	Metadata   *metadata.Component
 	Routing    *routing.Component
+	CGNAT      *cgnat.Component
 	Kafka      kafka.Component
 	ClickHouse clickhouse.Component
 	HTTP       *httpserver.Component

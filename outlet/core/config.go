@@ -17,7 +17,7 @@ import (
 // AnonymizeMode selects how IP anonymization is performed.
 type AnonymizeMode string
 
-// contants of AnonymizeMode
+// constants of AnonymizeMode
 const (
 	AnonymizeModeIPcrypt   AnonymizeMode = "ipcrypt"
 	AnonymizeModeAggregate AnonymizeMode = "aggregate"
@@ -62,6 +62,12 @@ type Configuration struct {
 	// Anonymize holds anonymization settings (new nested model)
 	Anonymize AnonymizeConfig
 	// Note: cryptopan-key and cryptopan-cache (old flat keys) are migrated in the unmarshaller hook.
+	// RouteSourceOnCGNATPrivateAddr makes source routing use the CGNAT private
+	// address when a source-side CGNAT match is available.
+	RouteSourceOnCGNATPrivateAddr bool
+	// RouteDestinationOnCGNATPrivateAddr makes destination routing use the CGNAT
+	// private address when a destination-side CGNAT match is available.
+	RouteDestinationOnCGNATPrivateAddr bool
 }
 
 // DefaultConfiguration represents the default configuration for the core component.
