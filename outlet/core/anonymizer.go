@@ -191,7 +191,7 @@ func (a *Anonymizer) AggregateIP(ip net.IP) net.IP {
 	return agg
 }
 
-// AnonymizeFlowFields takes textual one addresses and returns anonymized textual value.
+// AnonymizeFlowFields takes a textual IP address and returns an anonymized textual value.
 func (a *Anonymizer) AnonymizeFlowFields(addr string) string {
 	if !a.enabled {
 		return addr
