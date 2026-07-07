@@ -113,6 +113,7 @@ func (w *worker) processIncomingFlow(ctx context.Context, data []byte) error {
 			if outIfBoundary == schema.InterfaceBoundaryInternal || outIfBoundary == schema.InterfaceBoundaryUndefined {
 				w.bf.DstAddr = w.anonymizeAddr(w.bf.DstAddr)
 			}
+		}
 		// Update sampling rate to account for rate limiting
 		if dropRate > 0 {
 			w.bf.SamplingRate = uint64(float64(w.bf.SamplingRate) / (1 - dropRate))

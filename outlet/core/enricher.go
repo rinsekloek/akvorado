@@ -218,6 +218,8 @@ func largeCommunityToUInt128(largeCommunities []bgp.LargeCommunity) []schema.UIn
 		}
 	}
 	return communities
+}
+
 // getBoundaryClassifications retrieves the interface boundary classifications for a flow.
 // This should be called after enrichFlow has completed and runs the classifiers again.
 func (w *worker) getBoundaryClassifications(exporterIP netip.Addr) (schema.InterfaceBoundary, schema.InterfaceBoundary) {
