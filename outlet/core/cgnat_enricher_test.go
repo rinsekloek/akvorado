@@ -5,8 +5,8 @@ package core
 
 import (
 	"bytes"
-	"encoding/gob"
 	"context"
+	"encoding/gob"
 	"net/netip"
 	"sync"
 	"testing"

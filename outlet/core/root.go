@@ -41,7 +41,7 @@ type Component struct {
 	classifierErrLogger      reporter.Logger
 
 	// anonymizer used to anonymize SrcAddr/DstAddr before writing to ClickHouse
-	anonymizer *Anonymizer
+	anonymizer  *Anonymizer
 	rateLimiter rateLimiter
 }
 
