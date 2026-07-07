@@ -18,3 +18,5 @@ mock_*.go
 /.go-cache
 /.npm-cache
 /result
+.vscode/
+docker/Dockerfile-anon.dev
